@@ -12,16 +12,28 @@ namespace GameScene
         [SerializeField] private float lookSpeed = 2.0f;
         [SerializeField] private float lookXLimit = 45.0f;
         [SerializeField] private bool canJump = true;
+        [SerializeField] private bool canMove = true;
 
         [SerializeField] CharacterController characterController;
         Vector3 _moveDirection = Vector3.zero;
         float _rotationX = 0;
-        private bool canMove = true;
 
         public void LockCusor()
         {
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
+        }
+
+        public void LockMove(bool isMove = false)
+        {
+            canMove = isMove;
+            Cursor.lockState = canMove ? CursorLockMode.Locked : CursorLockMode.None;
+            Cursor.visible = !canMove;
+        }
+
+        public void LockJump(bool isJump = false)
+        {
+            canJump = isJump;
         }
 
         public void Controlling()
