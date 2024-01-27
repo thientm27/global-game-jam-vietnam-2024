@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using DG.Tweening;
 using GameScene.Component;
 using UnityEngine;
-using UnityEngine.Events;
 
 namespace GameScene
 {
@@ -14,12 +13,16 @@ namespace GameScene
         [SerializeField] private float patientMoveSpeed = 3f;
         [SerializeField] private string walkTrigger;
         [SerializeField] private string sitTrigger;
+        public Patient Patient
+        {
+            get => patient;
+            set => patient = value;
+        }
 
         public IEnumerator SitDownAndOpenMouth()
         {
             SetAnimation(PatientAnimationType.Sitting);
-            yield return new WaitForSeconds(1f);
-            Debug.Log("OPEN");
+            yield return new WaitForSeconds(2f);
             patient.OpenMouth(true);
         }
 
@@ -42,7 +45,7 @@ namespace GameScene
             }
         }
 
-        public IEnumerator StartMoveFromFirst(UnityAction onComplete)
+        public IEnumerator StartMoveFromFirst()
         {
             SetAnimation(PatientAnimationType.Move);
             Queue<Transform> queue = new Queue<Transform>();
@@ -58,15 +61,15 @@ namespace GameScene
             }
 
             SetAnimation(PatientAnimationType.Idle);
-            onComplete.Invoke();
+
         }
 
-        public IEnumerator RotatePatient(Vector3 targetMove, UnityAction onComplete)
+        public IEnumerator RotatePatient(Vector3 targetMove)
         {
             yield return patient.transform.DOLookAt(targetMove, 1f).SetEase(Ease.Linear)
                 .WaitForCompletion();
 
-            onComplete?.Invoke();
+           
         }
 
         private IEnumerator MovingPatient(Vector3 targetMove)

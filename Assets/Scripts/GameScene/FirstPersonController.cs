@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using DG.Tweening;
+using UnityEngine;
 
 namespace GameScene
 {
@@ -13,6 +14,7 @@ namespace GameScene
         [SerializeField] private float lookXLimit = 45.0f;
         [SerializeField] private bool canJump = true;
         [SerializeField] private bool canMove = true;
+        [SerializeField] private bool canRotate = true;
 
         [SerializeField] CharacterController characterController;
         Vector3 _moveDirection = Vector3.zero;
@@ -23,7 +25,12 @@ namespace GameScene
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
         }
-
+        public void LockRotate(bool isRotate = false)
+        {
+            canRotate = isRotate;
+            Cursor.lockState = canMove ? CursorLockMode.Locked : CursorLockMode.None;
+            Cursor.visible = !canMove;
+        }
         public void LockMove(bool isMove = false)
         {
             canMove = isMove;
@@ -43,14 +50,18 @@ namespace GameScene
             Vector3 right = characterController.transform.TransformDirection(Vector3.right);
 
             // Press Left Shift to run
-            bool isRunning = Input.GetKey(KeyCode.LeftShift);
-            float curSpeedX = canMove ? (isRunning ? runningSpeed : walkingSpeed) * Input.GetAxis("Vertical") : 0;
-            float curSpeedY = canMove ? (isRunning ? runningSpeed : walkingSpeed) * Input.GetAxis("Horizontal") : 0;
-            float movementDirectionY = _moveDirection.y;
-            _moveDirection = (forward * curSpeedX) + (right * curSpeedY);
+            if (canMove)
+            {
+                bool isRunning = Input.GetKey(KeyCode.LeftShift);
+                float curSpeedX = canMove ? (isRunning ? runningSpeed : walkingSpeed) * Input.GetAxis("Vertical") : 0;
+                float curSpeedY = canMove ? (isRunning ? runningSpeed : walkingSpeed) * Input.GetAxis("Horizontal") : 0;
+
+                _moveDirection = (forward * curSpeedX) + (right * curSpeedY);
+            }
 
             if (canJump)
             {
+                float movementDirectionY = _moveDirection.y;
                 if (Input.GetButton("Jump") && canMove && characterController.isGrounded)
                 {
                     _moveDirection.y = jumpSpeed;
@@ -71,16 +82,28 @@ namespace GameScene
             }
 
             // Move the controller
-            characterController.Move(_moveDirection * Time.deltaTime);
+            if (canMove)
+            {
+                characterController.Move(_moveDirection * Time.deltaTime);
+            }
 
             // Player and Camera rotation
-            if (canMove)
+            if (canRotate)
             {
                 _rotationX += -Input.GetAxis("Mouse Y") * lookSpeed;
                 _rotationX = Mathf.Clamp(_rotationX, -lookXLimit, lookXLimit);
                 playerCamera.transform.localRotation = Quaternion.Euler(_rotationX, 0, 0);
                 characterController.transform.rotation *= Quaternion.Euler(0, Input.GetAxis("Mouse X") * lookSpeed, 0);
             }
+        }
+
+        public void ChangeCameraView(int value)
+        {
+            playerCamera.DOFieldOfView(value, 1f);
+        }
+        public void ChangeCameraRotateAt(Vector3 target)
+        {
+            playerCamera.transform.LookAt(target);
         }
     }
 }
