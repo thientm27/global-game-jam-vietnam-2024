@@ -1,18 +1,21 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class GameController : MonoBehaviour
+namespace GameScene
 {
-    // Start is called before the first frame update
-    void Start()
+    public class GameController : MonoBehaviour
     {
-        
-    }
+        [SerializeField] private GameView gameView;
+        [SerializeField] private GameModel gameModel;
+        [SerializeField] private FirstPersonController firstPersonController;
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+        void Start()
+        {
+            firstPersonController.LockCusor();
+        }
+
+        void Update()
+        {
+            firstPersonController.Controlling();
+        }
     }
 }
