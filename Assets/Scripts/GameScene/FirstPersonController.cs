@@ -9,12 +9,27 @@ namespace GameScene
         [SerializeField] private float runningSpeed = 11.5f;
         [SerializeField] private float jumpSpeed = 8.0f;
         [SerializeField] private float gravity = 20.0f;
-        [SerializeField] private Camera playerCamera;
+        [SerializeField] private Camera playerCamera; // Camere
+        [SerializeField] private Camera camera2;
         [SerializeField] private float lookSpeed = 2.0f;
         [SerializeField] private float lookXLimit = 45.0f;
         [SerializeField] private bool canJump = true;
         [SerializeField] private bool canMove = true;
         [SerializeField] private bool canRotate = true;
+
+        public void ChangeCamera()
+        {
+            if (playerCamera.gameObject.activeInHierarchy)
+            {
+                playerCamera.gameObject.SetActive(false);
+                camera2.gameObject.SetActive(true);
+            }
+            else
+            {
+                playerCamera.gameObject.SetActive(true);
+                camera2.gameObject.SetActive(false);
+            }
+        }
 
         [SerializeField] CharacterController characterController;
         Vector3 _moveDirection = Vector3.zero;
@@ -25,12 +40,14 @@ namespace GameScene
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
         }
+
         public void LockRotate(bool isRotate = false)
         {
             canRotate = isRotate;
             Cursor.lockState = canMove ? CursorLockMode.Locked : CursorLockMode.None;
             Cursor.visible = !canMove;
         }
+
         public void LockMove(bool isMove = false)
         {
             canMove = isMove;
@@ -101,6 +118,7 @@ namespace GameScene
         {
             playerCamera.DOFieldOfView(value, 1f);
         }
+
         public void ChangeCameraRotateAt(Vector3 target)
         {
             playerCamera.transform.LookAt(target);
