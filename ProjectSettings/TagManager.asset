@@ -6,6 +6,7 @@ TagManager:
   tags:
   - HandleRang
   - PatientRang
+  - Services
   layers:
   - Default
   - TransparentFX

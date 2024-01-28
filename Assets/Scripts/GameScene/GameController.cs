@@ -1,12 +1,46 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using Audio;
 using DG.Tweening;
+using Services;
+using Unity.VisualScripting;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace GameScene
 {
     public class GameController : MonoBehaviour
     {
+        private const string soundObjectName = "Sound";
+
+        [SerializeField] private List<Sound> sounds;
+        [SerializeField] private Music music;
+        [SerializeField] private GameObject musicObject;
+        private GameServices gameServices = null;
+
+        void Awake()
+        {
+            if (GameObject.FindGameObjectWithTag(Constants.ServicesTag) == null)
+            {
+                GameObject gameServiceObject = new(nameof(GameServices))
+                {
+                    tag = Constants.ServicesTag
+                };
+                gameServices = gameServiceObject.AddComponent<GameServices>();
+                DontDestroyOnLoad(musicObject);
+                GameObject soundObject = new(soundObjectName);
+                DontDestroyOnLoad(soundObject);
+                gameServices.AddService(new AudioService(music, sounds, soundObject));
+                audioService = gameServices.GetService<AudioService>();
+                gameServices.AddService(new AudioService(music, sounds, soundObject));
+                audioService.MusicOn = true;
+                audioService.SoundOn = true;
+                audioService.StopMusic();
+            }
+        }
+
+        [Header("Other")]
         [SerializeField] private GameView gameView;
         [SerializeField] private GameModel gameModel;
         [SerializeField] private Transform playerPosition;
@@ -24,11 +58,30 @@ namespace GameScene
         [SerializeField] private Transform maxSpawn;
         [SerializeField] private Transform minSpawn;
         [SerializeField] private GameObject rangModel;
+        [SerializeField] private GameObject doctorHand;
+        [SerializeField] private Animator doctorAnimator;
+
         [SerializeField] private float yDraggingHeight = 1f;
         private Transform controlRang;
+        private bool hitAble;
+        private int hitCount;
+
+        private AudioService audioService;
+
+        private IEnumerator ResetHoleGame()
+        {
+            yield return new WaitForSeconds(Random.Range(5f, 10f));
+            DisableRandomTooth(2);
+            SpawnRang(2);
+            hitCount = 0;
+            hitAble = false;
+            controlRang = null;
+            StartCoroutine(PlayCinematicPatientComing());
+        }
 
         void Start()
         {
+            patientMoveController.OpenMouse(false);
             firstPersonController.LockMove();
             firstPersonController.LockJump();
             DisableRandomTooth(2);
@@ -69,6 +122,54 @@ namespace GameScene
                     controlRang = null;
                 }
             }
+
+            if (hitAble)
+            {
+                if (Input.GetKeyDown(KeyCode.Space))
+                {
+                    Attack();
+                }
+            }
+        }
+
+        private IEnumerator reseting;
+        [SerializeField] private Transform startRangRoi;
+
+        private void Attack()
+        {
+            hitCount++;
+            if (hitCount == 10)
+            {
+                hitAble = false;
+                StartCoroutine(PlayLeaveCinematic());
+                // one attck
+            }
+
+            doctorAnimator.SetBool("hit", true);
+            patientMoveController.SetAnimation(PatientAnimationType.GotHit);
+            if (reseting != null)
+            {
+                StopCoroutine(reseting);
+            }
+
+            // Rot ranng;
+            var newTooth = Instantiate(
+                rangModel,
+                startRangRoi.position,
+                Quaternion.identity
+            );
+            newTooth.SetActive(true);
+            AddRandomForce(newTooth.transform, Random.Range(1, 5f));
+            // reset
+            reseting = finishHit();
+            StartCoroutine(reseting);
+        }
+
+        private IEnumerator finishHit()
+        {
+            yield return new WaitForSeconds(0.5f);
+            doctorAnimator.SetBool("hit", false);
+            patientMoveController.SetAnimation(PatientAnimationType.Idle);
         }
 
         private void OnFinish()
@@ -161,6 +262,15 @@ namespace GameScene
             }
         }
 
+        private IEnumerator PlayLeaveCinematic()
+        {
+            doctorHand.SetActive(false);
+            patientMoveController.SetAnimation(PatientAnimationType.Idle);
+            firstPersonController.RotateCamera(true);
+            yield return StartCoroutine(patientMoveController.StartMoveFromEnd());
+            yield return StartCoroutine(ResetHoleGame());
+        }
+
         private IEnumerator PlayPaymentCinematic()
         {
             ShowTable(false);
@@ -171,6 +281,11 @@ namespace GameScene
 
             yield return StartCoroutine(patientMoveController.SitDown());
             yield return StartCoroutine(patientMoveController.StandUp());
+            yield return StartCoroutine(patientMoveController.Pay());
+            patientMoveController.SetAnimation(PatientAnimationType.Idle);
+            yield return new WaitForSeconds(1f);
+            doctorHand.SetActive(true);
+            hitAble = true;
         }
 
         private IEnumerator PlayCinematicPatientComing()
@@ -182,8 +297,26 @@ namespace GameScene
 
             firstPersonController.RotateCamera();
             firstPersonController.ChangeCamera();
+            yield return new WaitForSeconds(1f);
             patientMoveController.OpenMouse(true);
             ShowTable();
+        }
+
+        private void AddRandomForce(Transform targetTransform, float forceMagnitude)
+        {
+            Rigidbody rb = targetTransform.AddComponent<Rigidbody>();
+            if (rb != null)
+            {
+                Vector3 randomDirection = Random.onUnitSphere;
+                rb.AddForce(randomDirection * forceMagnitude, ForceMode.Impulse);
+                StartCoroutine(DestroyAfterDelay(targetTransform.gameObject, 5f));
+            }
+        }
+
+        private IEnumerator DestroyAfterDelay(GameObject targetObject, float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            Destroy(targetObject);
         }
 
         private IEnumerator MovePlayerToward()
