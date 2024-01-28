@@ -82,11 +82,12 @@ namespace GameScene
 
         void Start()
         {
+            audioService.PlayMusic();
             patientMoveController.OpenMouse(false);
             firstPersonController.LockMove();
             firstPersonController.LockJump();
             DisableRandomTooth(2);
-            SpawnRang(1);
+            SpawnRang(2);
             StartCoroutine(PlayCinematicPatientComing());
         }
 
@@ -215,6 +216,7 @@ namespace GameScene
                 {
                     if (missingTooth.Contains(hit.transform.gameObject))
                     {
+                        audioService.PlaySound(SoundToPlay.Tooth);
                         controlRang.gameObject.SetActive(false);
                         controlRang = null;
                         var tooth = patientTooth.Find(o => o.gameObject == hit.transform.gameObject);
@@ -257,6 +259,7 @@ namespace GameScene
             for (int i = 0; i < numberOfSpawn; i++)
             {
                 var obj = Instantiate(rangModel, table);
+                obj.SetActive(true);
                 obj.transform.position
                     = new Vector3(
                         obj.transform.position.x,
@@ -268,13 +271,14 @@ namespace GameScene
 
         private IEnumerator PlayLeaveCinematic()
         {
+            audioService.PlaySound(SoundToPlay.Talk, Random.Range(1, 4).ToString());
+            yield return new WaitForSeconds(3f);
             playerCol.enabled = true;
             doctorHand.SetActive(false);
             patientMoveController.SetAnimation(PatientAnimationType.Idle);
             firstPersonController.RotateCamera(true);
             yield return StartCoroutine(patientMoveController.StartMoveFromEnd());
             yield return StartCoroutine(ResetHoleGame());
- 
         }
 
         private IEnumerator PlayPaymentCinematic()
@@ -346,14 +350,6 @@ namespace GameScene
             yield return playerPosition.DOMove(playerEndPoint.position, 2f)
                 .SetEase(Ease.Linear)
                 .WaitForCompletion();
-        }
-
-        private IEnumerator MovePlayerBackWard()
-        {
-            yield return playerPosition.DOMove(playerStartPoint.position, 2f)
-                .SetEase(Ease.Linear)
-                .WaitForCompletion();
-            ;
         }
     }
 }

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using DG.Tweening;
 using GameScene.Component;
 using UnityEngine;
-using UnityEngine.Events;
 
 namespace GameScene
 {
