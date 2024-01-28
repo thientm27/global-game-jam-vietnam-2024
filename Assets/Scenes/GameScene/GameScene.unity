@@ -1839,6 +1839,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1500335023}
     m_Modifications:
+    - target: {fileID: 2296512738678961015, guid: fb0f90fd88d3c9b44a97f8cc0f9e93ce, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4972192399567899292, guid: fb0f90fd88d3c9b44a97f8cc0f9e93ce, type: 3}
       propertyPath: m_Name
       value: Doctor
