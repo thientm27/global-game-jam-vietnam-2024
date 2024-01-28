@@ -71,9 +71,9 @@ namespace GameScene
 
         private IEnumerator ResetHoleGame()
         {
-            yield return new WaitForSeconds(Random.Range(5f, 10f));
-            DisableRandomTooth(2);
-            SpawnRang(2);
+            yield return new WaitForSeconds(Random.Range(3f, 5f));
+            DisableRandomTooth(6);
+            SpawnRang(6);
             hitCount = 0;
             hitAble = false;
             controlRang = null;
@@ -86,18 +86,14 @@ namespace GameScene
             patientMoveController.OpenMouse(false);
             firstPersonController.LockMove();
             firstPersonController.LockJump();
-            DisableRandomTooth(2);
-            SpawnRang(2);
+            DisableRandomTooth(6);
+            SpawnRang(6);
             StartCoroutine(PlayCinematicPatientComing());
         }
 
         void Update()
         {
             firstPersonController.Controlling();
-            if (Input.GetKeyDown(KeyCode.L))
-            {
-                StartCoroutine(PlayCinematicPatientComing());
-            }
 
             if (Input.GetMouseButtonDown(0))
             {
@@ -315,6 +311,7 @@ namespace GameScene
 
         private IEnumerator PlayCinematicPatientComing()
         {
+            yield return new WaitForSeconds(2f);
             playerCol.enabled = true;
             yield return StartCoroutine(patientMoveController.StartMoveFromFirst());
             yield return StartCoroutine(patientMoveController.RotatePatient(playerPosition.position));
@@ -325,6 +322,7 @@ namespace GameScene
             firstPersonController.ChangeCamera();
             yield return new WaitForSeconds(1f);
             patientMoveController.OpenMouse(true);
+            audioService.PlaySound(SoundToPlay.Open);
             ShowTable();
         }
 
