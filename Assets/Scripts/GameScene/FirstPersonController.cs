@@ -41,7 +41,7 @@ namespace GameScene
             Cursor.visible = false;
         }
 
-        public void LockRotate(bool isRotate = false)
+        public void RotateCamera(bool isRotate = false)
         {
             canRotate = isRotate;
             Cursor.lockState = canMove ? CursorLockMode.Locked : CursorLockMode.None;

@@ -1,5 +1,4 @@
-﻿
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace GameScene.Component
 {
@@ -10,12 +9,19 @@ namespace GameScene.Component
         [SerializeField] private Animator animator;
         public Animator Animator => animator;
 
+
         public void OpenMouth(bool isOpen = true)
         {
-            openMouth.SetActive(isOpen);
-            closeMouth.SetActive(!isOpen);
+            if (isOpen)
+            {
+                openMouth.transform.position = closeMouth.transform.position;
+                closeMouth.transform.position += Vector3.up * 100;
+            }
+            else
+            {
+                closeMouth.transform.position = openMouth.transform.position;
+                openMouth.transform.position += Vector3.up * 100;
+            }
         }
     }
-
- 
 }

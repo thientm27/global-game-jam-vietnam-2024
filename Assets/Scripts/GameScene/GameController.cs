@@ -24,14 +24,15 @@ namespace GameScene
         [SerializeField] private Transform maxSpawn;
         [SerializeField] private Transform minSpawn;
         [SerializeField] private GameObject rangModel;
+        [SerializeField] private float yDraggingHeight = 1f;
         private Transform controlRang;
 
         void Start()
         {
             firstPersonController.LockMove();
             firstPersonController.LockJump();
-            DisableRandomTooth(8);
-            SpawnRang(7);
+            DisableRandomTooth(2);
+            SpawnRang(1);
             StartCoroutine(PlayCinematicPatientComing());
         }
 
@@ -70,7 +71,10 @@ namespace GameScene
             }
         }
 
-        public float yDraggingHeight = 2.1f;
+        private void OnFinish()
+        {
+            StartCoroutine(PlayPaymentCinematic());
+        }
 
         private Vector3 GetPositionFromCamera()
         {
@@ -90,7 +94,6 @@ namespace GameScene
                     if (raycastHit.transform.CompareTag("HandleRang"))
                     {
                         controlRang = raycastHit.transform;
-                        Debug.Log("Nice");
                     }
                 }
             }
@@ -109,10 +112,14 @@ namespace GameScene
                     {
                         controlRang.gameObject.SetActive(false);
                         controlRang = null;
-
                         var tooth = patientTooth.Find(o => o.gameObject == hit.transform.gameObject);
                         tooth.enabled = true;
                         missingTooth.Remove(hit.transform.gameObject);
+                        Debug.Log(missingTooth.Count);
+                        if (missingTooth.Count == 0)
+                        {
+                            OnFinish();
+                        }
                     }
                 }
             }
@@ -154,16 +161,28 @@ namespace GameScene
             }
         }
 
+        private IEnumerator PlayPaymentCinematic()
+        {
+            ShowTable(false);
+            patientMoveController.OpenMouse(false);
+            firstPersonController.ChangeCamera();
+            firstPersonController.RotateCamera(true);
+            firstPersonController.ChangeCameraRotateAt(patientMouth.position);
+
+            yield return StartCoroutine(patientMoveController.SitDown());
+            yield return StartCoroutine(patientMoveController.StandUp());
+        }
+
         private IEnumerator PlayCinematicPatientComing()
         {
             yield return StartCoroutine(patientMoveController.StartMoveFromFirst());
             yield return StartCoroutine(patientMoveController.RotatePatient(playerPosition.position));
-            yield return StartCoroutine(patientMoveController.SitDownAndOpenMouth());
+            yield return StartCoroutine(patientMoveController.SitDown());
             yield return StartCoroutine(MovePlayerToward());
 
-            firstPersonController.LockRotate();
+            firstPersonController.RotateCamera();
             firstPersonController.ChangeCamera();
-
+            patientMoveController.OpenMouse(true);
             ShowTable();
         }
 

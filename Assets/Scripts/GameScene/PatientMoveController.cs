@@ -19,11 +19,27 @@ namespace GameScene
             set => patient = value;
         }
 
-        public IEnumerator SitDownAndOpenMouth()
+        public void OpenMouse(bool isOpen)
+        {
+            if (isOpen)
+            {
+                SetAnimation(PatientAnimationType.Sitting);
+            }
+            
+            
+            patient.OpenMouth(isOpen);
+        }
+
+        public IEnumerator StandUp()
+        {
+            SetAnimation(PatientAnimationType.Idle);
+            yield return new WaitForSeconds(2f);
+        }
+
+        public IEnumerator SitDown()
         {
             SetAnimation(PatientAnimationType.Sitting);
             yield return new WaitForSeconds(2f);
-            patient.OpenMouth(true);
         }
 
         public void SetAnimation(PatientAnimationType animationType)
@@ -61,15 +77,12 @@ namespace GameScene
             }
 
             SetAnimation(PatientAnimationType.Idle);
-
         }
 
         public IEnumerator RotatePatient(Vector3 targetMove)
         {
             yield return patient.transform.DOLookAt(targetMove, 1f).SetEase(Ease.Linear)
                 .WaitForCompletion();
-
-           
         }
 
         private IEnumerator MovingPatient(Vector3 targetMove)
