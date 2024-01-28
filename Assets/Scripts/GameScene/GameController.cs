@@ -30,23 +30,9 @@ namespace GameScene
         {
             firstPersonController.LockMove();
             firstPersonController.LockJump();
-            DisableRandomTooth(7);
+            DisableRandomTooth(8);
             SpawnRang(7);
             StartCoroutine(PlayCinematicPatientComing());
-        }
-
-        private void SpawnRang(int numberOfSpawn = 1)
-        {
-            for (int i = 0; i < numberOfSpawn; i++)
-            {
-                var obj = Instantiate(rangModel, table);
-                obj.transform.position
-                    = new Vector3(
-                        obj.transform.position.x,
-                        Random.Range(minSpawn.position.y, maxSpawn.position.y),
-                        Random.Range(maxSpawn.position.z, minSpawn.position.z)
-                    );
-            }
         }
 
         void Update()
@@ -151,6 +137,20 @@ namespace GameScene
             {
                 missingTooth.Add(patientTooth[i].gameObject);
                 patientTooth[i].enabled = false;
+            }
+        }
+
+        private void SpawnRang(int numberOfSpawn)
+        {
+            for (int i = 0; i < numberOfSpawn; i++)
+            {
+                var obj = Instantiate(rangModel, table);
+                obj.transform.position
+                    = new Vector3(
+                        obj.transform.position.x,
+                        Random.Range(minSpawn.position.y, maxSpawn.position.y),
+                        Random.Range(maxSpawn.position.z, minSpawn.position.z)
+                    );
             }
         }
 
