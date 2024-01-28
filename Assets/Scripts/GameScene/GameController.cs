@@ -57,6 +57,7 @@ namespace GameScene
         [SerializeField] private Transform table;
         [SerializeField] private Transform maxSpawn;
         [SerializeField] private Transform minSpawn;
+        [SerializeField] private CapsuleCollider playerCol;
         [SerializeField] private GameObject rangModel;
         [SerializeField] private GameObject doctorHand;
         [SerializeField] private Animator doctorAnimator;
@@ -137,6 +138,8 @@ namespace GameScene
 
         private void Attack()
         {
+            audioService.PlaySound(SoundToPlay.Hit, Random.Range(1, 4).ToString());
+            audioService.PlaySound(SoundToPlay.Attack, Random.Range(1, 4).ToString());
             hitCount++;
             if (hitCount == 10)
             {
@@ -204,9 +207,10 @@ namespace GameScene
         {
             var ray = interactionCamera.ScreenPointToRay(Input.mousePosition);
             RaycastHit[] hits = Physics.RaycastAll(ray, 100f);
-
+            Debug.Log("casting");
             foreach (var hit in hits)
             {
+                Debug.Log(hit.transform.name);
                 if (hit.transform != null && hit.transform.CompareTag("PatientRang"))
                 {
                     if (missingTooth.Contains(hit.transform.gameObject))
@@ -264,11 +268,13 @@ namespace GameScene
 
         private IEnumerator PlayLeaveCinematic()
         {
+            playerCol.enabled = true;
             doctorHand.SetActive(false);
             patientMoveController.SetAnimation(PatientAnimationType.Idle);
             firstPersonController.RotateCamera(true);
             yield return StartCoroutine(patientMoveController.StartMoveFromEnd());
             yield return StartCoroutine(ResetHoleGame());
+ 
         }
 
         private IEnumerator PlayPaymentCinematic()
@@ -282,19 +288,35 @@ namespace GameScene
             yield return StartCoroutine(patientMoveController.SitDown());
             yield return StartCoroutine(patientMoveController.StandUp());
             yield return StartCoroutine(patientMoveController.Pay());
+            audioService.PlaySound(SoundToPlay.Card);
             patientMoveController.SetAnimation(PatientAnimationType.Idle);
+
             yield return new WaitForSeconds(1f);
             doctorHand.SetActive(true);
             hitAble = true;
         }
 
+        private bool isFirst = true;
+
+        public void PlayGlassSound()
+        {
+            if (isFirst)
+            {
+                audioService.PlaySound(SoundToPlay.Glass, "1");
+                isFirst = false;
+            }
+
+            audioService.PlaySound(SoundToPlay.Glass, "2");
+        }
+
         private IEnumerator PlayCinematicPatientComing()
         {
+            playerCol.enabled = true;
             yield return StartCoroutine(patientMoveController.StartMoveFromFirst());
             yield return StartCoroutine(patientMoveController.RotatePatient(playerPosition.position));
             yield return StartCoroutine(patientMoveController.SitDown());
             yield return StartCoroutine(MovePlayerToward());
-
+            playerCol.enabled = false;
             firstPersonController.RotateCamera();
             firstPersonController.ChangeCamera();
             yield return new WaitForSeconds(1f);

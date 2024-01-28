@@ -177,14 +177,14 @@ namespace Services
 
         // AUDIO PLAY
 
-        public void PlaySound(SoundToPlay nameSound)
+        public void PlaySound(SoundToPlay nameSound, string addedString = "")
         {
             if (!soundOn)
             {
                 return;
             }
 
-            soundAudioSources[nameSound.ToString()].Play();
+            soundAudioSources[nameSound.ToString() + addedString].Play();
         }
 
         #endregion
@@ -193,8 +193,12 @@ namespace Services
     public enum SoundToPlay
     {
         Hit,
+        Attack,
+        Glass,
+        Tooth,
+        Talk,
+        Card,
         Forget,
         BrokeGlass,
-        AddTooth,
     }
 }
